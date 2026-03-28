@@ -1,0 +1,33 @@
+# Rust
+src-tauri/target/
+
+# Node
+node_modules/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Build artifacts
+*.dmg
+
+# AI tooling / internal dev
+.claude/
+.agents/
+.agent/
+.trae/
+skills/
+doc_refe/
+skills-lock.json
+CLAUDE.md
+
+# Test fixtures (generated, not source)
+tests/fixtures/
+
+# Internal specs
+spec.md
