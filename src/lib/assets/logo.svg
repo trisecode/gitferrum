@@ -1,0 +1,33 @@
+<svg width="400" height="400" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo cuadrado -->
+  <rect width="200" height="200" fill="#0f1117" />
+
+  <!-- Sombra proyectada -->
+  <ellipse cx="100" cy="160" rx="40" ry="10" fill="#000" fill-opacity="0.3" />
+
+  <!-- Patas superiores (Estilo ramas de Git) -->
+  <path d="M60 90 L40 70 M140 90 L160 70" stroke="#e2e8f0" stroke-width="6" stroke-linecap="round" />
+
+  <!-- Patas medias (Nodos de conexión) -->
+  <path d="M50 110 L30 110 M150 110 L170 110" stroke="#e2e8f0" stroke-width="6" stroke-linecap="round" />
+
+  <!-- Patas inferiores -->
+  <path d="M60 130 L45 150 M140 130 L155 150" stroke="#e2e8f0" stroke-width="6" stroke-linecap="round" />
+
+  <!-- Cuerpo (Hexágono - Representa un Commit/Nodo) -->
+  <path d="M100 60 L143.3 85 L143.3 135 L100 160 L56.7 135 L56.7 85 Z" fill="#f97316" />
+
+  <!-- Detalle de brillo en el cuerpo -->
+  <path d="M100 70 L130 87 L130 120 L100 100 Z" fill="#ffffff" fill-opacity="0.1" />
+
+  <!-- Pinzas (Estilo "Merge" o "Fork") -->
+  <path d="M40 70 Q30 50 50 40" fill="none" stroke="#f97316" stroke-width="6" stroke-linecap="round" />
+  <path d="M160 70 Q170 50 150 40" fill="none" stroke="#f97316" stroke-width="6" stroke-linecap="round" />
+
+  <!-- Ojos (Nodos de estado) -->
+  <circle cx="85" cy="105" r="5" fill="#0f1117" />
+  <circle cx="115" cy="105" r="5" fill="#0f1117" />
+
+  <!-- Línea de "circuito" o flujo de código -->
+  <path d="M85 135 Q100 145 115 135" fill="none" stroke="#0f1117" stroke-width="3" stroke-linecap="round" opacity="0.5" />
+</svg>

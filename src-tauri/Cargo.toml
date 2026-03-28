@@ -1,0 +1,40 @@
+[package]
+name = "gitferrum-app"
+version = "0.1.0"
+description = "A high-performance Git client"
+authors = ["Trisecode"]
+license = "GPL-3.0"
+edition = "2021"
+
+[lib]
+name = "gitferrum_app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+gix = { version = "0.70", default-features = false, features = ["max-performance", "revision", "status"] }
+notify = "8"
+notify-debouncer-mini = "0.6"
+rayon = "1.10"
+tokio = { version = "1", features = ["full"] }
+parking_lot = "0.12"
+tauri-plugin-updater = "2.10.0"
+tauri-plugin-process = "2.3.1"
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
