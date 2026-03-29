@@ -4,7 +4,7 @@
   import { uiStore } from "$lib/stores/ui.svelte";
   import { i18n } from "$lib/stores/i18n.svelte";
   import { FolderOpen, Download } from "lucide-svelte";
-  import logoSvg from "$lib/assets/logo.svg";
+  import logoSvg from "$lib/assets/logo.svg?url";
 
   let isOpening = $state(false);
 
