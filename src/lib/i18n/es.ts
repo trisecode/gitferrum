@@ -130,6 +130,10 @@ export default {
   settings: "Configuracion",
   language: "Idioma",
   settingsTooltip: "Configuracion",
+  general: "General",
+  about: "Acerca de",
+  version: "Version",
+  checkForUpdates: "Buscar actualizaciones",
 
   // File status
   binary: "(binario)",
