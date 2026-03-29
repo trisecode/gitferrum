@@ -1,6 +1,4 @@
 <script lang="ts">
-  import type { Component } from "svelte";
-
   let {
     label,
     icon,
@@ -8,7 +6,7 @@
     danger = false,
   }: {
     label: string;
-    icon?: Component<{ size?: number; class?: string }>;
+    icon?: any;
     onclick: () => void;
     danger?: boolean;
   } = $props();

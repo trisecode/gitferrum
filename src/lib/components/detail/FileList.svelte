@@ -1,13 +1,12 @@
 <script lang="ts">
   import type { DiffStats, FileDiff } from "$lib/types";
   import { FilePlus, FileEdit, FileX, FileSymlink, Copy } from "lucide-svelte";
-  import type { Component } from "svelte";
 
   import { i18n } from "$lib/stores/i18n.svelte";
 
   let { files, stats }: { files: FileDiff[]; stats: DiffStats } = $props();
 
-  function statusIcon(status: string): Component<{ size?: number; class?: string }> {
+  function statusIcon(status: string): any {
     switch (status) {
       case "added": return FilePlus;
       case "deleted": return FileX;

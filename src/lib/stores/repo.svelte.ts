@@ -1,7 +1,7 @@
 import type { CommitGraph, CommitNode, DiffResult, RefLabel, RepoStatus } from "$lib/types";
 
 export class RepoState {
-  repoPath: string;
+  repoPath = $state("");
   branches = $state<RefLabel[]>([]);
   commitGraph = $state<CommitGraph | null>(null);
   selectedCommit = $state<CommitNode | null>(null);
