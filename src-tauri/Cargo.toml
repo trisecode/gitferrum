@@ -1,6 +1,6 @@
 [package]
 name = "gitferrum-app"
-version = "0.0.1"
+version = "0.0.2"
 description = "A high-performance Git client"
 authors = ["Trisecode"]
 license = "GPL-3.0"
