@@ -20,7 +20,7 @@
 
 ---
 
-GitFerrum is a native desktop Git client designed as a fast, minimal alternative to tools like GitKraken and SourceTree.  Tauri v2 for a tiny, secure native app.
+GitFerrum is a native desktop Git client designed as a fast, minimal alternative to tools like GitKraken and SourceTree. It leverages [gitoxide](https://github.com/GitoxideLabs/gitoxide) (pure Rust) for ultra-fast Git reads and Tauri v2 for a tiny, secure native app.
 
 ## Screenshots
 
