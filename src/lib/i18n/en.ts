@@ -143,4 +143,79 @@ export default {
   // Detail pane
   filesChanged: (n: number) => `${n} file${n !== 1 ? "s" : ""} changed`,
   parents: "Parents",
+
+  // Branch operations
+  deleteBranch: "Delete branch",
+  forceDeleteBranch: "Force delete branch",
+  renameBranch: "Rename branch...",
+  mergeBranchInto: "Merge into current",
+  branchDeleted: (name: string) => `Deleted branch ${name}`,
+  branchRenamed: (oldName: string, newName: string) => `Renamed ${oldName} to ${newName}`,
+  cannotDeleteHead: "Cannot delete the current branch",
+  newBranchNameLabel: "New branch name",
+
+  // Remote branch operations
+  deleteRemoteBranch: "Delete remote branch",
+  deleteRemoteBranchConfirm: (name: string) => `Are you sure you want to delete the remote branch "${name}"? This cannot be undone.`,
+  remoteBranchDeleted: (name: string) => `Deleted remote branch ${name}`,
+
+  // Tag operations
+  createTagLabel: "Create tag...",
+  deleteTagLabel: "Delete tag",
+  deleteRemoteTagLabel: "Delete tag from remote",
+  tagName: "Tag name",
+  tagMessage: "Message (optional, for annotated tag)",
+  tagMessagePlaceholder: "Tag message...",
+  tagCreated: (name: string) => `Created tag ${name}`,
+  tagDeleted: (name: string) => `Deleted tag ${name}`,
+  remoteTagDeleted: (name: string) => `Deleted remote tag ${name}`,
+
+  // Amend
+  amendLastCommit: "Amend last commit",
+  amend: "Amend",
+  commitAmended: "Commit amended",
+
+  // Reset
+  resetSoft: "Reset --soft to here",
+  resetMixed: "Reset --mixed to here",
+  resetHard: "Reset --hard to here",
+  resetHardWarning: "This will discard all changes in your working directory. This cannot be undone.",
+  resetComplete: (mode: string) => `Reset (${mode}) complete`,
+
+  // Stash operations
+  applyStash: "Apply",
+  dropStash: "Drop",
+  stashApplied: (index: number) => `Applied stash@{${index}}`,
+  stashDropped: (index: number) => `Dropped stash@{${index}}`,
+  confirmDropStash: "Are you sure you want to drop this stash? This cannot be undone.",
+
+  // Cherry-pick & Revert
+  cherryPickCommit: "Cherry-pick",
+  cherryPickApplied: "Cherry-pick applied",
+  revertCommitLabel: "Revert commit",
+  commitReverted: "Commit reverted",
+
+  // Copy
+  copySha: "Copy SHA",
+  shaCopied: "SHA copied to clipboard",
+
+  // Merge
+  mergeStarted: (name: string) => `Merged ${name}`,
+  confirm: "Confirm",
+  deleteConfirm: "Delete",
+
+  // Merge dialog
+  mergeBranches: "Merge Branches",
+  mergeFrom: "Merge from",
+  mergeInto: "Into (current branch)",
+  mergeAction: "Merge",
+  merging: "Merging...",
+  selectBranch: "Select a branch...",
+  mergeDescription: (source: string, target: string) => `This will merge "${source}" into "${target}". If there are conflicts, you will need to resolve them manually.`,
+
+  // Delete branch confirmation
+  deleteBranchTitle: "Delete Branch",
+  deleteBranchConfirm: (name: string) => `Are you sure you want to delete the local branch "${name}"?`,
+  forceDeleteBranchTitle: "Force Delete Branch",
+  forceDeleteBranchConfirm: (name: string) => `Are you sure you want to force delete the local branch "${name}"? Unmerged changes will be lost.`,
 };

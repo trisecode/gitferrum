@@ -1,10 +1,12 @@
 <script lang="ts">
   import type { RefLabel } from "$lib/types";
-  import { gitAction, getCommitGraph, getBranches, getStatus } from "$lib/services/git";
+  import { gitAction } from "$lib/services/git";
+  import { refreshRepo } from "$lib/services/repo-actions";
   import { repoStore } from "$lib/stores/repo.svelte";
+  import { uiStore } from "$lib/stores/ui.svelte";
   import { toastStore } from "$lib/stores/toast.svelte";
   import { i18n } from "$lib/stores/i18n.svelte";
-  import { Globe, GitBranchPlus, GitFork, Eye } from "lucide-svelte";
+  import { Globe, GitBranchPlus, GitFork, Eye, Trash2 } from "lucide-svelte";
   import ContextMenu from "../ContextMenu.svelte";
   import ContextMenuItem from "../ContextMenuItem.svelte";
 
@@ -24,20 +26,6 @@
   function closeMenu() {
     menu = null;
     showNameInput = false;
-  }
-
-  async function refreshRepo() {
-    const repo = repoStore.activeRepo;
-    if (!repo) return;
-    const path = repo.repoPath;
-    const [status, graph, refs] = await Promise.all([
-      getStatus(path),
-      getCommitGraph(path, 0, 200),
-      getBranches(path),
-    ]);
-    repo.status = status;
-    repo.commitGraph = graph;
-    repo.branches = refs;
   }
 
   async function handleCheckoutLocal() {
@@ -74,6 +62,16 @@
     } catch (e) {
       toastStore.error(String(e));
     }
+  }
+
+  function handleDeleteRemoteBranch() {
+    if (!menu) return;
+    const fullName = menu.branch;
+    const parts = fullName.split("/");
+    const remote = parts[0];
+    const branch = parts.slice(1).join("/");
+    closeMenu();
+    uiStore.deleteRemoteBranchConfirm = { fullName, remote, branch };
   }
 
   async function handleBrowse() {
@@ -113,6 +111,8 @@
       <ContextMenuItem label={i18n.t.createLocalBranch} icon={GitBranchPlus} onclick={handleCheckoutLocal} />
       <ContextMenuItem label={i18n.t.createCustomName} icon={GitFork} onclick={handleNewBranch} />
       <ContextMenuItem label={i18n.t.browseDetached} icon={Eye} onclick={handleBrowse} />
+      <div class="my-1 border-t border-border"></div>
+      <ContextMenuItem label={i18n.t.deleteRemoteBranch} icon={Trash2} onclick={handleDeleteRemoteBranch} danger />
     {:else}
       <div class="px-3 py-2">
         <label class="block text-xs text-text-secondary mb-1">{i18n.t.newBranchName}</label>

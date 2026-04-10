@@ -1,7 +1,33 @@
 import { repoStore, MultiRepoStore } from "$lib/stores/repo.svelte";
 import { toastStore } from "$lib/stores/toast.svelte";
 import { i18n } from "$lib/stores/i18n.svelte";
-import { openRepo, cloneRepo, getCommitGraph, getBranches, getStatus, watchRepo, closeRepo as closeRepoCmd, pushBranch } from "$lib/services/git";
+import { openRepo, cloneRepo, getCommitGraph, getBranches, getStatus, watchRepo, closeRepo as closeRepoCmd, pushBranch, stashList as stashListCmd } from "$lib/services/git";
+
+/** Refresh status, commit graph, and branches for the active repo */
+export async function refreshRepo(): Promise<void> {
+  const repo = repoStore.activeRepo;
+  if (!repo) return;
+  const path = repo.repoPath;
+  const [status, graph, branches] = await Promise.all([
+    getStatus(path),
+    getCommitGraph(path, 0, 200),
+    getBranches(path),
+  ]);
+  repo.status = status;
+  repo.commitGraph = graph;
+  repo.branches = branches;
+}
+
+/** Load stash list for the active repo */
+export async function refreshStashes(): Promise<[number, string][]> {
+  const repo = repoStore.activeRepo;
+  if (!repo) return [];
+  try {
+    return await stashListCmd(repo.repoPath);
+  } catch {
+    return [];
+  }
+}
 
 export async function openAndLoadRepo(path: string): Promise<void> {
   const repo = repoStore.addRepo(path);
@@ -60,15 +86,7 @@ export async function executePush(remote: string, branch: string, setUpstream: b
   if (!repo) return;
   try {
     await pushBranch(repo.repoPath, remote, branch, setUpstream);
-    // Refresh status after push
-    const [status, graph, branches] = await Promise.all([
-      getStatus(repo.repoPath),
-      getCommitGraph(repo.repoPath, 0, 200),
-      getBranches(repo.repoPath),
-    ]);
-    repo.status = status;
-    repo.commitGraph = graph;
-    repo.branches = branches;
+    await refreshRepo();
     toastStore.success(i18n.t.pushedToRemote);
   } catch (e) {
     toastStore.error(String(e));

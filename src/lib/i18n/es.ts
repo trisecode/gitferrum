@@ -143,4 +143,79 @@ export default {
   // Detail pane
   filesChanged: (n: number) => `${n} archivo${n !== 1 ? "s" : ""} modificado${n !== 1 ? "s" : ""}`,
   parents: "Padres",
+
+  // Branch operations
+  deleteBranch: "Eliminar rama",
+  forceDeleteBranch: "Forzar eliminación de rama",
+  renameBranch: "Renombrar rama...",
+  mergeBranchInto: "Combinar en la actual",
+  branchDeleted: (name: string) => `Rama ${name} eliminada`,
+  branchRenamed: (oldName: string, newName: string) => `Renombrada ${oldName} a ${newName}`,
+  cannotDeleteHead: "No se puede eliminar la rama actual",
+  newBranchNameLabel: "Nuevo nombre de rama",
+
+  // Remote branch operations
+  deleteRemoteBranch: "Eliminar rama remota",
+  deleteRemoteBranchConfirm: (name: string) => `¿Estás seguro de eliminar la rama remota "${name}"? Esto no se puede deshacer.`,
+  remoteBranchDeleted: (name: string) => `Rama remota ${name} eliminada`,
+
+  // Tag operations
+  createTagLabel: "Crear etiqueta...",
+  deleteTagLabel: "Eliminar etiqueta",
+  deleteRemoteTagLabel: "Eliminar etiqueta del remoto",
+  tagName: "Nombre de la etiqueta",
+  tagMessage: "Mensaje (opcional, para etiqueta anotada)",
+  tagMessagePlaceholder: "Mensaje de la etiqueta...",
+  tagCreated: (name: string) => `Etiqueta ${name} creada`,
+  tagDeleted: (name: string) => `Etiqueta ${name} eliminada`,
+  remoteTagDeleted: (name: string) => `Etiqueta remota ${name} eliminada`,
+
+  // Amend
+  amendLastCommit: "Enmendar último commit",
+  amend: "Enmendar",
+  commitAmended: "Commit enmendado",
+
+  // Reset
+  resetSoft: "Reset --soft hasta aquí",
+  resetMixed: "Reset --mixed hasta aquí",
+  resetHard: "Reset --hard hasta aquí",
+  resetHardWarning: "Esto descartará todos los cambios en tu directorio de trabajo. No se puede deshacer.",
+  resetComplete: (mode: string) => `Reset (${mode}) completado`,
+
+  // Stash operations
+  applyStash: "Aplicar",
+  dropStash: "Eliminar",
+  stashApplied: (index: number) => `Aplicado stash@{${index}}`,
+  stashDropped: (index: number) => `Eliminado stash@{${index}}`,
+  confirmDropStash: "¿Estás seguro de eliminar este stash? No se puede deshacer.",
+
+  // Cherry-pick & Revert
+  cherryPickCommit: "Cherry-pick",
+  cherryPickApplied: "Cherry-pick aplicado",
+  revertCommitLabel: "Revertir commit",
+  commitReverted: "Commit revertido",
+
+  // Copy
+  copySha: "Copiar SHA",
+  shaCopied: "SHA copiado al portapapeles",
+
+  // Merge
+  mergeStarted: (name: string) => `Combinado ${name}`,
+  confirm: "Confirmar",
+  deleteConfirm: "Eliminar",
+
+  // Merge dialog
+  mergeBranches: "Combinar Ramas",
+  mergeFrom: "Combinar desde",
+  mergeInto: "Hacia (rama actual)",
+  mergeAction: "Combinar",
+  merging: "Combinando...",
+  selectBranch: "Seleccionar una rama...",
+  mergeDescription: (source: string, target: string) => `Esto combinará "${source}" en "${target}". Si hay conflictos, deberás resolverlos manualmente.`,
+
+  // Delete branch confirmation
+  deleteBranchTitle: "Eliminar Rama",
+  deleteBranchConfirm: (name: string) => `¿Estás seguro de que deseas eliminar la rama local "${name}"?`,
+  forceDeleteBranchTitle: "Forzar Eliminación de Rama",
+  forceDeleteBranchConfirm: (name: string) => `¿Estás seguro de que deseas forzar la eliminación de la rama local "${name}"? Los cambios no combinados se perderán.`,
 };

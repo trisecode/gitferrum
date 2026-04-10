@@ -143,4 +143,79 @@ export default {
   // Detail pane
   filesChanged: (n: number) => `${n} arquivo${n !== 1 ? "s" : ""} alterado${n !== 1 ? "s" : ""}`,
   parents: "Pais",
+
+  // Branch operations
+  deleteBranch: "Excluir branch",
+  forceDeleteBranch: "Forçar exclusão da branch",
+  renameBranch: "Renomear branch...",
+  mergeBranchInto: "Mesclar na atual",
+  branchDeleted: (name: string) => `Branch ${name} excluída`,
+  branchRenamed: (oldName: string, newName: string) => `Renomeada ${oldName} para ${newName}`,
+  cannotDeleteHead: "Não é possível excluir a branch atual",
+  newBranchNameLabel: "Novo nome da branch",
+
+  // Remote branch operations
+  deleteRemoteBranch: "Excluir branch remota",
+  deleteRemoteBranchConfirm: (name: string) => `Tem certeza que deseja excluir a branch remota "${name}"? Isso não pode ser desfeito.`,
+  remoteBranchDeleted: (name: string) => `Branch remota ${name} excluída`,
+
+  // Tag operations
+  createTagLabel: "Criar tag...",
+  deleteTagLabel: "Excluir tag",
+  deleteRemoteTagLabel: "Excluir tag do remoto",
+  tagName: "Nome da tag",
+  tagMessage: "Mensagem (opcional, para tag anotada)",
+  tagMessagePlaceholder: "Mensagem da tag...",
+  tagCreated: (name: string) => `Tag ${name} criada`,
+  tagDeleted: (name: string) => `Tag ${name} excluída`,
+  remoteTagDeleted: (name: string) => `Tag remota ${name} excluída`,
+
+  // Amend
+  amendLastCommit: "Emendar último commit",
+  amend: "Emendar",
+  commitAmended: "Commit emendado",
+
+  // Reset
+  resetSoft: "Reset --soft até aqui",
+  resetMixed: "Reset --mixed até aqui",
+  resetHard: "Reset --hard até aqui",
+  resetHardWarning: "Isso descartará todas as alterações no seu diretório de trabalho. Não pode ser desfeito.",
+  resetComplete: (mode: string) => `Reset (${mode}) concluído`,
+
+  // Stash operations
+  applyStash: "Aplicar",
+  dropStash: "Remover",
+  stashApplied: (index: number) => `Aplicado stash@{${index}}`,
+  stashDropped: (index: number) => `Removido stash@{${index}}`,
+  confirmDropStash: "Tem certeza que deseja remover este stash? Não pode ser desfeito.",
+
+  // Cherry-pick & Revert
+  cherryPickCommit: "Cherry-pick",
+  cherryPickApplied: "Cherry-pick aplicado",
+  revertCommitLabel: "Reverter commit",
+  commitReverted: "Commit revertido",
+
+  // Copy
+  copySha: "Copiar SHA",
+  shaCopied: "SHA copiado para a área de transferência",
+
+  // Merge
+  mergeStarted: (name: string) => `Mesclado ${name}`,
+  confirm: "Confirmar",
+  deleteConfirm: "Excluir",
+
+  // Merge dialog
+  mergeBranches: "Mesclar Branches",
+  mergeFrom: "Mesclar de",
+  mergeInto: "Para (branch atual)",
+  mergeAction: "Mesclar",
+  merging: "Mesclando...",
+  selectBranch: "Selecionar uma branch...",
+  mergeDescription: (source: string, target: string) => `Isso mesclará "${source}" em "${target}". Se houver conflitos, você precisará resolvê-los manualmente.`,
+
+  // Delete branch confirmation
+  deleteBranchTitle: "Excluir Branch",
+  deleteBranchConfirm: (name: string) => `Tem certeza que deseja excluir a branch local "${name}"?`,
+  forceDeleteBranchTitle: "Forçar Exclusão de Branch",
+  forceDeleteBranchConfirm: (name: string) => `Tem certeza que deseja forçar a exclusão da branch local "${name}"? Alterações não mescladas serão perdidas.`,
 };

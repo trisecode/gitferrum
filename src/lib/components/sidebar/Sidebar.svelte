@@ -2,6 +2,7 @@
   import { repoStore } from "$lib/stores/repo.svelte";
   import { uiStore } from "$lib/stores/ui.svelte";
   import { i18n } from "$lib/stores/i18n.svelte";
+  import { refreshStashes } from "$lib/services/repo-actions";
   import SidebarSection from "./SidebarSection.svelte";
   import BranchList from "./BranchList.svelte";
   import RemoteList from "./RemoteList.svelte";
@@ -19,6 +20,18 @@
   let tags = $derived(
     repoStore.branches.filter((b) => b.kind === "tag"),
   );
+
+  let stashes = $state<[number, string][]>([]);
+
+  async function loadStashes() {
+    stashes = await refreshStashes();
+  }
+
+  $effect(() => {
+    // Reload stashes when active repo changes
+    const _id = repoStore.activeRepoId;
+    if (_id) loadStashes();
+  });
 </script>
 
 <aside class="flex flex-col overflow-hidden border-r border-border bg-bg-secondary">
@@ -56,8 +69,8 @@
         <TagList {tags} />
       </SidebarSection>
 
-      <SidebarSection title={i18n.t.stashes} count={0}>
-        <StashList />
+      <SidebarSection title={i18n.t.stashes} count={stashes.length}>
+        <StashList {stashes} onrefresh={loadStashes} />
       </SidebarSection>
     </div>
   {/if}

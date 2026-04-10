@@ -9,16 +9,19 @@
     selected = false,
     graphWidth,
     onclick,
+    oncontextmenu,
   }: {
     commit: CommitNode;
     selected?: boolean;
     graphWidth: number;
     onclick: () => void;
+    oncontextmenu?: (e: MouseEvent) => void;
   } = $props();
 </script>
 
 <button
   {onclick}
+  {oncontextmenu}
   class="flex w-full items-center border-b border-border text-left transition-colors hover:bg-bg-hover"
   class:bg-bg-tertiary={selected}
   style="height: {ROW_HEIGHT}px; padding-left: {graphWidth}px"

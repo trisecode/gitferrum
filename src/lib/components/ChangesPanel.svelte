@@ -2,12 +2,23 @@
   import { repoStore } from "$lib/stores/repo.svelte";
   import { uiStore } from "$lib/stores/ui.svelte";
   import { toastStore } from "$lib/stores/toast.svelte";
-  import { gitAction, getStatus, getCommitGraph, getBranches, getDiff } from "$lib/services/git";
+  import { gitAction, getStatus, getDiff, amendCommit } from "$lib/services/git";
+  import { refreshRepo } from "$lib/services/repo-actions";
   import { FilePlus, FileEdit, FileX, Check, X, ChevronDown, ChevronRight, PanelRightClose } from "lucide-svelte";
   import { i18n } from "$lib/stores/i18n.svelte";
 
   let commitMessage = $state("");
   let isCommitting = $state(false);
+  let isAmend = $state(false);
+
+  $effect(() => {
+    if (isAmend) {
+      const firstCommit = repoStore.commitGraph?.nodes[0];
+      if (firstCommit) {
+        commitMessage = firstCommit.message;
+      }
+    }
+  });
   let selectedFiles = $state(new Set<string>());
   let stagedExpanded = $state(true);
   let unstagedExpanded = $state(true);
@@ -90,30 +101,29 @@
       await gitAction(repo.repoPath, "stage", { files: Array.from(selectedFiles) });
     }
 
-    // Need at least staged files to commit
-    const freshStatus = await getStatus(repo.repoPath);
-    if (freshStatus.staged.length === 0) {
-      toastStore.error(i18n.t.noStagedChanges);
-      return;
+    // Need at least staged files to commit (unless amending)
+    if (!isAmend) {
+      const freshStatus = await getStatus(repo.repoPath);
+      if (freshStatus.staged.length === 0) {
+        toastStore.error(i18n.t.noStagedChanges);
+        return;
+      }
     }
 
     isCommitting = true;
     try {
-      const path = repo.repoPath;
-      await gitAction(path, "commit", { message: commitMessage.trim() });
+      if (isAmend) {
+        await amendCommit(repo.repoPath, commitMessage.trim());
+      } else {
+        await gitAction(repo.repoPath, "commit", { message: commitMessage.trim() });
+      }
 
       commitMessage = "";
       selectedFiles = new Set();
+      isAmend = false;
 
-      const [status, graph, branches] = await Promise.all([
-        getStatus(path),
-        getCommitGraph(path, 0, 200),
-        getBranches(path),
-      ]);
-      repo.status = status;
-      repo.commitGraph = graph;
-      repo.branches = branches;
-      toastStore.success(i18n.t.commitCreated);
+      await refreshRepo();
+      toastStore.success(isAmend ? i18n.t.commitAmended : i18n.t.commitCreated);
     } catch (e) {
       toastStore.error(String(e));
     } finally {
@@ -284,13 +294,18 @@
       class="w-full resize-none rounded border border-border bg-bg-primary px-3 py-2 text-xs text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none"
     ></textarea>
 
+    <label class="mt-1.5 flex items-center gap-2 text-xs text-text-secondary cursor-pointer">
+      <input type="checkbox" bind:checked={isAmend} class="accent-accent h-3 w-3" />
+      {i18n.t.amendLastCommit}
+    </label>
+
     <button
       onclick={handleCommit}
-      disabled={!commitMessage.trim() || (staged.length === 0 && selectedFiles.size === 0) || isCommitting}
+      disabled={!commitMessage.trim() || (!isAmend && staged.length === 0 && selectedFiles.size === 0) || isCommitting}
       class="mt-2 flex w-full items-center justify-center gap-1 rounded bg-accent px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-40"
     >
       <Check size={13} />
-      {isCommitting ? i18n.t.committing : i18n.t.commit}
+      {isCommitting ? i18n.t.committing : (isAmend ? i18n.t.amend : i18n.t.commit)}
     </button>
   </div>
 </aside>
