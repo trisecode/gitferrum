@@ -2,7 +2,7 @@
   import { repoStore } from "$lib/stores/repo.svelte";
   import { uiStore } from "$lib/stores/ui.svelte";
   import { i18n } from "$lib/stores/i18n.svelte";
-  import { resetToCommit, deleteBranch, deleteRemoteBranch } from "$lib/services/git";
+  import { resetToCommit, deleteBranch, deleteRemoteBranch, gitAction, getStatus } from "$lib/services/git";
   import { executePush, refreshRepo } from "$lib/services/repo-actions";
   import { toastStore } from "$lib/stores/toast.svelte";
   import Sidebar from "./sidebar/Sidebar.svelte";
@@ -68,6 +68,37 @@
       await resetToCommit(repo.repoPath, info.commit, info.mode);
       await refreshRepo();
       toastStore.success(i18n.t.resetComplete(info.mode));
+    } catch (e) {
+      toastStore.error(String(e));
+    }
+  }
+
+  async function handleDiscardFileConfirm() {
+    const info = uiStore.discardFileConfirm;
+    if (!info) return;
+    const repo = repoStore.activeRepo;
+    if (!repo) return;
+    uiStore.discardFileConfirm = null;
+    try {
+      await gitAction(repo.repoPath, "discard_files", {
+        files: info.paths,
+        untracked_files: info.untrackedPaths,
+      });
+      repo.status = await getStatus(repo.repoPath);
+      toastStore.success(i18n.t.changesDiscarded);
+    } catch (e) {
+      toastStore.error(String(e));
+    }
+  }
+
+  async function handleDiscardAllConfirm() {
+    const repo = repoStore.activeRepo;
+    if (!repo) return;
+    uiStore.discardAllConfirm = false;
+    try {
+      await gitAction(repo.repoPath, "discard_all", {});
+      repo.status = await getStatus(repo.repoPath);
+      toastStore.success(i18n.t.allChangesDiscarded);
     } catch (e) {
       toastStore.error(String(e));
     }
@@ -158,6 +189,26 @@
     confirmLabel={i18n.t.deleteConfirm}
     onconfirm={handleDeleteRemoteBranchConfirm}
     oncancel={() => (uiStore.deleteRemoteBranchConfirm = null)}
+  />
+{/if}
+
+{#if uiStore.discardFileConfirm}
+  <ConfirmDialog
+    title={i18n.t.discardFileTitle}
+    message={i18n.t.discardFileMessage}
+    confirmLabel={i18n.t.discardChanges}
+    onconfirm={handleDiscardFileConfirm}
+    oncancel={() => (uiStore.discardFileConfirm = null)}
+  />
+{/if}
+
+{#if uiStore.discardAllConfirm}
+  <ConfirmDialog
+    title={i18n.t.discardAllTitle}
+    message={i18n.t.discardAllMessage}
+    confirmLabel={i18n.t.discardAllChanges}
+    onconfirm={handleDiscardAllConfirm}
+    oncancel={() => (uiStore.discardAllConfirm = false)}
   />
 {/if}
 

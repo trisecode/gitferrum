@@ -12,6 +12,8 @@ class UIStore {
   mergeDialogOpen = $state<{ preselectedBranch?: string } | null>(null);
   deleteBranchConfirm = $state<{ name: string; force: boolean } | null>(null);
   deleteRemoteBranchConfirm = $state<{ fullName: string; remote: string; branch: string } | null>(null);
+  discardFileConfirm = $state<{ paths: string[]; untrackedPaths: string[] } | null>(null);
+  discardAllConfirm = $state(false);
 
   toggleSidebar() {
     this.sidebarCollapsed = !this.sidebarCollapsed;

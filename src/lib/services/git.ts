@@ -154,3 +154,13 @@ export async function pushBranch(
 export async function watchRepo(repoPath: string): Promise<void> {
   return invoke("watch_repo", { repoPath });
 }
+
+// ─── Git global config ───
+
+export async function getGitConfig(): Promise<{ name: string; email: string }> {
+  return invoke<{ name: string; email: string }>("get_git_config");
+}
+
+export async function setGitConfig(name: string, email: string): Promise<void> {
+  return invoke("set_git_config", { name, email });
+}

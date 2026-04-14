@@ -9,6 +9,7 @@
 </p>
 
 <p align="center">
+  <a href="https://gitferrum.com">Website</a> &bull;
   <a href="#features">Features</a> &bull;
   <a href="#screenshots">Screenshots</a> &bull;
   <a href="#installation">Installation</a> &bull;
@@ -28,19 +29,26 @@ GitFerrum is a native desktop Git client designed as a fast, minimal alternative
   <img src="imgs/img1.png" alt="GitFerrum Screenshot" width="900" />
 </p>
 
-
-
-
 ## Features
 
 - **Commit Graph Visualization** - SVG-based branch graph with color-coded lanes, merge curves, and infinite scroll
 - **Multi-Repository** - Open, switch between, and close multiple repos from the sidebar
 - **Changes Panel** - View staged, modified, and untracked files with one-click staging and inline commit
+- **Discard Changes** - Discard individual file changes via right-click context menu or discard all unstaged/untracked changes at once, with confirmation dialog
 - **Smart Push** - Automatically detects when a branch has no upstream and offers to create it on the remote
 - **Diff Viewer** - Unified diff view with syntax-colored additions/deletions and line numbers
 - **Clone Repositories** - Clone from any URL directly from the app
-- **Remote Branch Management** - Right-click context menu to create local branches, create with custom names, or browse in detached HEAD
+- **Branch Management** - Create, rename, delete (local and remote), merge, and checkout branches via context menu
+- **Tag Management** - Create (lightweight and annotated), delete (local and remote) tags
+- **Stash Management** - Push, apply, and drop stashes
+- **Merge & Conflict Resolution** - Merge branches with automatic conflict detection and abort support
+- **Cherry-pick & Revert** - Cherry-pick commits or revert them with conflict handling
+- **Amend Commits** - Amend the last commit message
+- **Reset** - Soft, mixed, and hard reset to any commit
+- **Remote Branch Management** - Right-click context menu to create local branches, create with custom name, or browse in detached HEAD
 - **Fetch / Pull / Push** - Toolbar buttons with badge indicators showing commits ahead/behind
+- **Git Configuration** - Configure global Git identity (user.name and user.email) from the Settings dialog
+- **Auto Updates** - Automatic update checking on startup with in-app download and install
 - **File Watcher** - Automatic status refresh when files change externally (500ms debounce)
 - **Multi-Language** - English, Spanish, and Portuguese with auto-detection
 - **Keyboard Shortcuts** - `Cmd+O` open repo, `Cmd+Enter` commit, `Escape` close panels
@@ -60,7 +68,7 @@ GitFerrum is a native desktop Git client designed as a fast, minimal alternative
 
 ### Download
 
-Download the latest release from the [Releases](../../releases) page:
+Download the latest release from the [Releases](../../releases) page or visit [gitferrum.com](https://gitferrum.com) for more info:
 
 - **macOS**: `.dmg` (Apple Silicon & Intel)
 - **Windows**: `.msi` / `.exe`
@@ -71,13 +79,14 @@ Download the latest release from the [Releases](../../releases) page:
 **Prerequisites:**
 - [Rust](https://rustup.rs/) (latest stable)
 - [Node.js](https://nodejs.org/) 18+
+- [pnpm](https://pnpm.io/) (recommended) or npm
 - [Tauri CLI prerequisites](https://v2.tauri.app/start/prerequisites/)
 
 ```bash
 git clone https://github.com/trisecode/gitferrum.git
 cd gitferrum
-npm install
-npm run tauri build
+pnpm install
+pnpm tauri build
 ```
 
 The built app will be at `src-tauri/target/release/bundle/`.
@@ -86,22 +95,22 @@ The built app will be at `src-tauri/target/release/bundle/`.
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Run in development mode (hot reload)
-npm run tauri dev
+pnpm tauri dev
 
 # Run tests
-npm test                                    # Frontend (Vitest)
+pnpm test                                   # Frontend (Vitest)
 cd src-tauri && cargo test                  # Backend (Rust)
 
 # Type checking
-npm run check                               # Svelte
+pnpm check                                  # Svelte
 cd src-tauri && cargo check                 # Rust
 
 # Production build
-npm run tauri build
-npm run tauri build -- --debug              # Debug build
+pnpm tauri build
+pnpm tauri build -- --debug                 # Debug build
 ```
 
 ### SSH Setup
@@ -134,7 +143,7 @@ gitferrum/
 │       ├── git/                  # Git operations
 │       │   ├── graph.rs          # Commit graph + lane assignment algorithm
 │       │   ├── diff.rs           # Unified diff parsing
-│       │   ├── actions.rs        # Push, pull, fetch, commit, clone
+│       │   ├── actions.rs        # Push, pull, fetch, commit, clone, discard, config
 │       │   ├── status.rs         # Working directory status
 │       │   └── refs.rs           # Branches, tags, remotes (pure gitoxide)
 │       ├── state.rs              # Multi-repo state management
@@ -147,7 +156,7 @@ gitferrum/
 
 - **Git reads** (graph, refs, history) use **gitoxide** — a pure Rust Git implementation for maximum speed
 - **Git writes** (push, pull, commit, clone) shell out to **git CLI** for reliability and SSH compatibility
-- **Frontend ↔ Backend** communication via Tauri's `invoke()` IPC with typed commands
+- **Frontend <-> Backend** communication via Tauri's `invoke()` IPC with typed commands
 - **Network operations** run in dedicated OS threads with 60-second timeouts
 - **State** is managed with Svelte 5 runes (`$state`, `$derived`) in singleton stores
 - **Multi-repo** support: each repo maintains independent state (graph, branches, status)
@@ -159,8 +168,8 @@ GitFerrum supports 3 languages with automatic detection based on your system loc
 | Language | Code |
 |----------|------|
 | English | `en` |
-| Español | `es` |
-| Português | `pt` |
+| Espanol | `es` |
+| Portugues | `pt` |
 
 Translations live in `src/lib/i18n/`. To add a new language, create a new file following the pattern of `en.ts`.
 
@@ -200,12 +209,16 @@ Contributions are welcome! Please:
 4. Push to the branch
 5. Open a Pull Request
 
+See [LICENSING.md](LICENSING.md) for contribution terms.
+
 ## License
 
-[GPL-3.0](LICENSE)
+[AGPL-3.0-or-later](LICENSE)
+
+A [commercial license](https://trisecode.com) is available for proprietary use. See [LICENSING.md](LICENSING.md) for details.
 
 ---
 
 <p align="center">
-  Built with Rust and Svelte by <a href="https://github.com/trisecode">Trisecode</a>
+  Built with Rust and Svelte by <a href="https://trisecode.com">Trisecode</a>
 </p>

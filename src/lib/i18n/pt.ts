@@ -134,6 +134,15 @@ export default {
   about: "Sobre",
   version: "Versao",
   checkForUpdates: "Verificar atualizacoes",
+  gitConfiguration: "Configuração do Git",
+  gitConfigDescription: "Configure sua identidade global do Git. Isso é usado para todos os repositórios que não têm configuração local.",
+  gitUserName: "Nome",
+  gitUserEmail: "E-mail",
+  gitUserNamePlaceholder: "Seu nome",
+  gitUserEmailPlaceholder: "seu@email.com",
+  gitConfigSaved: "Configuração do Git salva",
+  save: "Salvar",
+  website: "Site",
 
   // File status
   binary: "(binário)",
@@ -218,4 +227,14 @@ export default {
   deleteBranchConfirm: (name: string) => `Tem certeza que deseja excluir a branch local "${name}"?`,
   forceDeleteBranchTitle: "Forçar Exclusão de Branch",
   forceDeleteBranchConfirm: (name: string) => `Tem certeza que deseja forçar a exclusão da branch local "${name}"? Alterações não mescladas serão perdidas.`,
+
+  // Discard changes
+  discardChanges: "Descartar alterações",
+  discardAllChanges: "Descartar todas as alterações",
+  discardFileTitle: "Descartar Alterações",
+  discardFileMessage: "Descartar todas as alterações neste arquivo? Esta ação não pode ser desfeita.",
+  discardAllTitle: "Descartar Todas as Alterações",
+  discardAllMessage: "Descartar todas as alterações não preparadas e remover todos os arquivos não rastreados? Esta ação não pode ser desfeita.",
+  changesDiscarded: "Alterações descartadas",
+  allChangesDiscarded: "Todas as alterações descartadas",
 };

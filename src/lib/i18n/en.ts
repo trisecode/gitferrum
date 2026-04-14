@@ -134,6 +134,15 @@ export default {
   about: "About",
   version: "Version",
   checkForUpdates: "Check for updates",
+  gitConfiguration: "Git Configuration",
+  gitConfigDescription: "Configure your global Git identity. This is used for all repositories that don't have a local configuration.",
+  gitUserName: "Name",
+  gitUserEmail: "Email",
+  gitUserNamePlaceholder: "Your name",
+  gitUserEmailPlaceholder: "your@email.com",
+  gitConfigSaved: "Git configuration saved",
+  save: "Save",
+  website: "Website",
 
   // File status
   binary: "(binary)",
@@ -218,4 +227,14 @@ export default {
   deleteBranchConfirm: (name: string) => `Are you sure you want to delete the local branch "${name}"?`,
   forceDeleteBranchTitle: "Force Delete Branch",
   forceDeleteBranchConfirm: (name: string) => `Are you sure you want to force delete the local branch "${name}"? Unmerged changes will be lost.`,
+
+  // Discard changes
+  discardChanges: "Discard changes",
+  discardAllChanges: "Discard all changes",
+  discardFileTitle: "Discard Changes",
+  discardFileMessage: "Discard all changes to this file? This cannot be undone.",
+  discardAllTitle: "Discard All Changes",
+  discardAllMessage: "Discard all unstaged changes and remove all untracked files? This cannot be undone.",
+  changesDiscarded: "Changes discarded",
+  allChangesDiscarded: "All changes discarded",
 };

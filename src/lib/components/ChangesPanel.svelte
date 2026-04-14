@@ -4,8 +4,10 @@
   import { toastStore } from "$lib/stores/toast.svelte";
   import { gitAction, getStatus, getDiff, amendCommit } from "$lib/services/git";
   import { refreshRepo } from "$lib/services/repo-actions";
-  import { FilePlus, FileEdit, FileX, Check, X, ChevronDown, ChevronRight, PanelRightClose } from "lucide-svelte";
+  import { FilePlus, FileEdit, FileX, Check, X, ChevronDown, ChevronRight, PanelRightClose, Trash2 } from "lucide-svelte";
   import { i18n } from "$lib/stores/i18n.svelte";
+  import ContextMenu from "./ContextMenu.svelte";
+  import ContextMenuItem from "./ContextMenuItem.svelte";
 
   let commitMessage = $state("");
   let isCommitting = $state(false);
@@ -24,6 +26,7 @@
   let unstagedExpanded = $state(true);
   let untrackedExpanded = $state(true);
   let selectedFilePath = $state<string | null>(null);
+  let discardMenu = $state<{ x: number; y: number; path: string; isUntracked: boolean } | null>(null);
 
   let staged = $derived(repoStore.status?.staged ?? []);
   let unstaged = $derived(repoStore.status?.unstaged ?? []);
@@ -131,6 +134,26 @@
     }
   }
 
+  function openDiscardMenu(e: MouseEvent, path: string, isUntracked: boolean) {
+    e.preventDefault();
+    discardMenu = { x: e.clientX, y: e.clientY, path, isUntracked };
+  }
+
+  function closeDiscardMenu() {
+    discardMenu = null;
+  }
+
+  function handleDiscardFile() {
+    if (!discardMenu) return;
+    const { path, isUntracked } = discardMenu;
+    closeDiscardMenu();
+    if (isUntracked) {
+      uiStore.discardFileConfirm = { paths: [], untrackedPaths: [path] };
+    } else {
+      uiStore.discardFileConfirm = { paths: [path], untrackedPaths: [] };
+    }
+  }
+
   async function handleFileClick(path: string) {
     const repo = repoStore.activeRepo;
     if (!repo) return;
@@ -218,11 +241,22 @@
           >
             {i18n.t.selectAll}
           </button>
+          <button
+            onclick={() => (uiStore.discardAllConfirm = true)}
+            title={i18n.t.discardAllChanges}
+            class="rounded p-0.5 text-text-muted transition-colors hover:bg-bg-hover hover:text-diff-remove"
+          >
+            <Trash2 size={12} />
+          </button>
         </div>
         {#if unstagedExpanded}
           {#each unstaged as file}
             {@const Icon = statusIcon(file.status)}
-            <div class="flex w-full items-center gap-2 px-4 py-1 text-xs transition-colors hover:bg-bg-hover">
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <div
+              class="flex w-full items-center gap-2 px-4 py-1 text-xs transition-colors hover:bg-bg-hover"
+              oncontextmenu={(e) => openDiscardMenu(e, file.path, false)}
+            >
               <input
                 type="checkbox"
                 checked={selectedFiles.has(file.path)}
@@ -254,7 +288,10 @@
         </button>
         {#if untrackedExpanded}
           {#each untracked as path}
-            <label class="flex w-full cursor-pointer items-center gap-2 px-4 py-1 text-xs transition-colors hover:bg-bg-hover">
+            <label
+              class="flex w-full cursor-pointer items-center gap-2 px-4 py-1 text-xs transition-colors hover:bg-bg-hover"
+              oncontextmenu={(e) => openDiscardMenu(e, path, true)}
+            >
               <input
                 type="checkbox"
                 checked={selectedFiles.has(path)}
@@ -275,6 +312,13 @@
       </div>
     {/if}
   </div>
+
+  <!-- Context menu for discard -->
+  {#if discardMenu}
+    <ContextMenu x={discardMenu.x} y={discardMenu.y} onclose={closeDiscardMenu}>
+      <ContextMenuItem label={i18n.t.discardChanges} icon={Trash2} onclick={handleDiscardFile} danger />
+    </ContextMenu>
+  {/if}
 
   <!-- Commit area -->
   <div class="border-t border-border p-3">

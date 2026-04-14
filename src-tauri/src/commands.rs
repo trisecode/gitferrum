@@ -304,8 +304,39 @@ pub async fn git_action(
             crate::git::actions::create_branch_from_remote(&repo, new_name, remote_branch)?;
             Ok(serde_json::json!({"success": true}))
         }
+        "discard_files" => {
+            let files: Vec<String> = serde_json::from_value(
+                args.get("files")
+                    .cloned()
+                    .unwrap_or(serde_json::Value::Array(vec![])),
+            )
+            .map_err(|e| AppError::Other(e.to_string()))?;
+            let untracked_files: Vec<String> = serde_json::from_value(
+                args.get("untracked_files")
+                    .cloned()
+                    .unwrap_or(serde_json::Value::Array(vec![])),
+            )
+            .map_err(|e| AppError::Other(e.to_string()))?;
+            crate::git::actions::discard_files(&repo, &files, &untracked_files)
+        }
+        "discard_all" => {
+            crate::git::actions::discard_all(&repo)
+        }
         _ => Err(AppError::Other(format!("Unknown action: {}", action))),
     }
+}
+
+// ─── Git global config (not repo-specific) ───
+
+#[tauri::command]
+pub async fn get_git_config() -> Result<serde_json::Value, AppError> {
+    let (name, email) = crate::git::actions::get_git_config()?;
+    Ok(serde_json::json!({"name": name, "email": email}))
+}
+
+#[tauri::command]
+pub async fn set_git_config(name: String, email: String) -> Result<(), AppError> {
+    crate::git::actions::set_git_config(&name, &email)
 }
 
 #[tauri::command]

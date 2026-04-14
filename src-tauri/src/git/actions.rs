@@ -733,6 +733,104 @@ pub fn cherry_pick(repo_path: &Path, commit: &str) -> Result<crate::types::PullR
     Err(AppError::Git(String::from_utf8_lossy(&output.stderr).trim().to_string()))
 }
 
+/// Discard changes for specific files.
+/// tracked modified/deleted → git checkout -- <file>
+/// untracked → git clean -f -- <file>
+pub fn discard_files(repo_path: &Path, files: &[String], untracked_files: &[String]) -> Result<serde_json::Value, AppError> {
+    if !files.is_empty() {
+        let mut cmd = Command::new("git");
+        cmd.current_dir(repo_path).args(["checkout", "--", "--"]);
+        for f in files {
+            cmd.arg(f);
+        }
+        let output = cmd.output()?;
+        if !output.status.success() {
+            return Err(AppError::Git(
+                String::from_utf8_lossy(&output.stderr).trim().to_string(),
+            ));
+        }
+    }
+
+    if !untracked_files.is_empty() {
+        let mut cmd = Command::new("git");
+        cmd.current_dir(repo_path).args(["clean", "-f", "--"]);
+        for f in untracked_files {
+            cmd.arg(f);
+        }
+        let output = cmd.output()?;
+        if !output.status.success() {
+            return Err(AppError::Git(
+                String::from_utf8_lossy(&output.stderr).trim().to_string(),
+            ));
+        }
+    }
+
+    Ok(serde_json::json!({"success": true}))
+}
+
+/// Discard ALL unstaged changes + untracked files.
+/// git checkout -- .  (tracked)
+/// git clean -fd      (untracked)
+pub fn discard_all(repo_path: &Path) -> Result<serde_json::Value, AppError> {
+    let output = Command::new("git")
+        .current_dir(repo_path)
+        .args(["checkout", "--", "."])
+        .output()?;
+    if !output.status.success() {
+        return Err(AppError::Git(
+            String::from_utf8_lossy(&output.stderr).trim().to_string(),
+        ));
+    }
+
+    let output = Command::new("git")
+        .current_dir(repo_path)
+        .args(["clean", "-fd"])
+        .output()?;
+    if !output.status.success() {
+        return Err(AppError::Git(
+            String::from_utf8_lossy(&output.stderr).trim().to_string(),
+        ));
+    }
+
+    Ok(serde_json::json!({"success": true}))
+}
+
+/// Get global git config values for user.name and user.email.
+pub fn get_git_config() -> Result<(String, String), AppError> {
+    let name = Command::new("git")
+        .args(["config", "--global", "user.name"])
+        .output()
+        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+        .unwrap_or_default();
+
+    let email = Command::new("git")
+        .args(["config", "--global", "user.email"])
+        .output()
+        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+        .unwrap_or_default();
+
+    Ok((name, email))
+}
+
+/// Set global git config values for user.name and user.email.
+pub fn set_git_config(name: &str, email: &str) -> Result<(), AppError> {
+    let output = Command::new("git")
+        .args(["config", "--global", "user.name", name])
+        .output()?;
+    if !output.status.success() {
+        return Err(AppError::Git(String::from_utf8_lossy(&output.stderr).trim().to_string()));
+    }
+
+    let output = Command::new("git")
+        .args(["config", "--global", "user.email", email])
+        .output()?;
+    if !output.status.success() {
+        return Err(AppError::Git(String::from_utf8_lossy(&output.stderr).trim().to_string()));
+    }
+
+    Ok(())
+}
+
 /// Revert a commit.
 pub fn revert_commit(repo_path: &Path, commit: &str) -> Result<crate::types::PullResult, AppError> {
     let output = Command::new("git")

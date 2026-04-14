@@ -134,6 +134,15 @@ export default {
   about: "Acerca de",
   version: "Version",
   checkForUpdates: "Buscar actualizaciones",
+  gitConfiguration: "Configuración de Git",
+  gitConfigDescription: "Configura tu identidad global de Git. Se usa para todos los repositorios que no tienen configuración local.",
+  gitUserName: "Nombre",
+  gitUserEmail: "Correo electrónico",
+  gitUserNamePlaceholder: "Tu nombre",
+  gitUserEmailPlaceholder: "tu@correo.com",
+  gitConfigSaved: "Configuración de Git guardada",
+  save: "Guardar",
+  website: "Sitio web",
 
   // File status
   binary: "(binario)",
@@ -218,4 +227,14 @@ export default {
   deleteBranchConfirm: (name: string) => `¿Estás seguro de que deseas eliminar la rama local "${name}"?`,
   forceDeleteBranchTitle: "Forzar Eliminación de Rama",
   forceDeleteBranchConfirm: (name: string) => `¿Estás seguro de que deseas forzar la eliminación de la rama local "${name}"? Los cambios no combinados se perderán.`,
+
+  // Discard changes
+  discardChanges: "Descartar cambios",
+  discardAllChanges: "Descartar todos los cambios",
+  discardFileTitle: "Descartar cambios",
+  discardFileMessage: "¿Descartar todos los cambios de este archivo? Esta acción no se puede deshacer.",
+  discardAllTitle: "Descartar todos los cambios",
+  discardAllMessage: "¿Descartar todos los cambios sin preparar y eliminar todos los archivos sin seguimiento? Esta acción no se puede deshacer.",
+  changesDiscarded: "Cambios descartados",
+  allChangesDiscarded: "Todos los cambios descartados",
 };
