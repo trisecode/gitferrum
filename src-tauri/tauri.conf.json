@@ -34,7 +34,11 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "createUpdaterArtifacts": "v1Compatible"
+    "createUpdaterArtifacts": "v1Compatible",
+    "macOS": {
+      "entitlements": "Entitlements.plist",
+      "signingIdentity": "Developer ID Application: TRISECODE LLC (72QUJ9J38X)"
+    }
   },
   "plugins": {
     "updater": {
