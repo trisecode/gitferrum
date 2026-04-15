@@ -15,8 +15,12 @@ jobs:
         include:
           - platform: macos-latest
             args: --target aarch64-apple-darwin
+            target: aarch64-apple-darwin
+            arch: aarch64
           - platform: macos-latest
             args: --target x86_64-apple-darwin
+            target: x86_64-apple-darwin
+            arch: x64
           - platform: ubuntu-22.04
             args: ""
           - platform: windows-latest
@@ -72,10 +76,11 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
 
-      - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
+      # macOS: build with retries for notarization network issues
+      - name: Build Tauri app (macOS)
+        if: matrix.platform == 'macos-latest'
+        timeout-minutes: 40
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
@@ -84,6 +89,61 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          for attempt in 1 2 3; do
+            echo "=== Build attempt $attempt of 3 ==="
+            if pnpm tauri build ${{ matrix.args }}; then
+              echo "Build succeeded on attempt $attempt"
+              exit 0
+            fi
+            if [ $attempt -lt 3 ]; then
+              echo "Attempt $attempt failed. Retrying in 60s..."
+              sleep 60
+            fi
+          done
+          echo "All 3 build attempts failed"
+          exit 1
+
+      - name: Upload macOS artifacts
+        if: matrix.platform == 'macos-latest'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.ref_name }}"
+          TARGET="${{ matrix.target }}"
+          ARCH="${{ matrix.arch }}"
+          BUNDLE_DIR="src-tauri/target/${TARGET}/release/bundle"
+
+          # Create draft release if it doesn't exist yet
+          gh release create "$TAG" \
+            --draft \
+            --title "GitFerrum $TAG" \
+            --notes "See the assets to download and install this version." \
+            2>/dev/null || true
+
+          # Upload DMG (already has arch in filename)
+          for f in "${BUNDLE_DIR}/dmg/"*.dmg; do
+            [ -f "$f" ] && gh release upload "$TAG" "$f" --clobber
+          done
+
+          # Upload updater artifacts with arch suffix to avoid name conflicts
+          if [ -f "${BUNDLE_DIR}/macos/GitFerrum.app.tar.gz" ]; then
+            cp "${BUNDLE_DIR}/macos/GitFerrum.app.tar.gz" "${BUNDLE_DIR}/macos/GitFerrum_${ARCH}.app.tar.gz"
+            gh release upload "$TAG" "${BUNDLE_DIR}/macos/GitFerrum_${ARCH}.app.tar.gz" --clobber
+          fi
+          if [ -f "${BUNDLE_DIR}/macos/GitFerrum.app.tar.gz.sig" ]; then
+            cp "${BUNDLE_DIR}/macos/GitFerrum.app.tar.gz.sig" "${BUNDLE_DIR}/macos/GitFerrum_${ARCH}.app.tar.gz.sig"
+            gh release upload "$TAG" "${BUNDLE_DIR}/macos/GitFerrum_${ARCH}.app.tar.gz.sig" --clobber
+          fi
+
+      # Linux/Windows: use tauri-action (handles build + release + updater JSON)
+      - name: Build Tauri app
+        if: matrix.platform != 'macos-latest'
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "GitFerrum ${{ github.ref_name }}"
@@ -96,3 +156,95 @@ jobs:
         if: matrix.platform == 'macos-latest' && always()
         run: |
           security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
+
+  # Generate updater JSON with all platforms (including macOS uploaded manually)
+  updater-json:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Generate latest.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.ref_name }}"
+          VERSION="${TAG#v}"
+          PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          REPO="${{ github.repository }}"
+          BASE_URL="https://github.com/${REPO}/releases/download/${TAG}"
+
+          # Download all .sig files from the release
+          mkdir -p /tmp/sigs
+          gh release download "$TAG" -p "*.sig" -D /tmp/sigs --repo "$REPO" 2>/dev/null || true
+
+          # Get all release asset names
+          ASSETS=$(gh release view "$TAG" --json assets -q '.assets[].name' --repo "$REPO")
+
+          # Helper: read sig file content or empty string
+          read_sig() {
+            local sigfile="/tmp/sigs/$1"
+            if [ -f "$sigfile" ]; then
+              cat "$sigfile"
+            else
+              echo ""
+            fi
+          }
+
+          # Build platforms object with jq
+          PLATFORMS="{}"
+
+          # macOS aarch64
+          MACOS_ARM_FILE=$(echo "$ASSETS" | grep "aarch64.app.tar.gz$" || true)
+          if [ -n "$MACOS_ARM_FILE" ]; then
+            MACOS_ARM_SIG=$(read_sig "${MACOS_ARM_FILE}.sig")
+            PLATFORMS=$(echo "$PLATFORMS" | jq \
+              --arg sig "$MACOS_ARM_SIG" \
+              --arg url "${BASE_URL}/${MACOS_ARM_FILE}" \
+              '. + {"darwin-aarch64": {"signature": $sig, "url": $url}}')
+          fi
+
+          # macOS x86_64
+          MACOS_X64_FILE=$(echo "$ASSETS" | grep "x64.app.tar.gz$" || true)
+          if [ -n "$MACOS_X64_FILE" ]; then
+            MACOS_X64_SIG=$(read_sig "${MACOS_X64_FILE}.sig")
+            PLATFORMS=$(echo "$PLATFORMS" | jq \
+              --arg sig "$MACOS_X64_SIG" \
+              --arg url "${BASE_URL}/${MACOS_X64_FILE}" \
+              '. + {"darwin-x86_64": {"signature": $sig, "url": $url}}')
+          fi
+
+          # Linux x86_64
+          LINUX_FILE=$(echo "$ASSETS" | grep -E "\.AppImage\.tar\.gz$" || true)
+          if [ -n "$LINUX_FILE" ]; then
+            LINUX_SIG=$(read_sig "${LINUX_FILE}.sig")
+            PLATFORMS=$(echo "$PLATFORMS" | jq \
+              --arg sig "$LINUX_SIG" \
+              --arg url "${BASE_URL}/${LINUX_FILE}" \
+              '. + {"linux-x86_64": {"signature": $sig, "url": $url}}')
+          fi
+
+          # Windows x86_64
+          WIN_FILE=$(echo "$ASSETS" | grep -E "\.nsis\.zip$" || true)
+          if [ -n "$WIN_FILE" ]; then
+            WIN_SIG=$(read_sig "${WIN_FILE}.sig")
+            PLATFORMS=$(echo "$PLATFORMS" | jq \
+              --arg sig "$WIN_SIG" \
+              --arg url "${BASE_URL}/${WIN_FILE}" \
+              '. + {"windows-x86_64": {"signature": $sig, "url": $url}}')
+          fi
+
+          # Generate latest.json
+          jq -n \
+            --arg version "$VERSION" \
+            --arg notes "See the assets to download and install this version." \
+            --arg pub_date "$PUB_DATE" \
+            --argjson platforms "$PLATFORMS" \
+            '{version: $version, notes: $notes, pub_date: $pub_date, platforms: $platforms}' \
+            > /tmp/latest.json
+
+          echo "Generated latest.json:"
+          cat /tmp/latest.json
+
+          # Upload to release (overwrite if exists)
+          gh release upload "$TAG" /tmp/latest.json --clobber --repo "$REPO"
