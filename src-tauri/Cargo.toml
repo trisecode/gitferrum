@@ -3,7 +3,7 @@ name = "gitferrum-app"
 version = "0.1.0"
 description = "A high-performance Git client"
 authors = ["Trisecode"]
-license = "AGPL-3.0-or-later"
+license = "MIT"
 edition = "2021"
 
 [lib]

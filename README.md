@@ -209,13 +209,11 @@ Contributions are welcome! Please:
 4. Push to the branch
 5. Open a Pull Request
 
-See [LICENSING.md](LICENSING.md) for contribution terms.
+See [LICENSING.md](LICENSING.md) for details.
 
 ## License
 
-[AGPL-3.0-or-later](LICENSE)
-
-A [commercial license](https://trisecode.com) is available for proprietary use. See [LICENSING.md](LICENSING.md) for details.
+[MIT](LICENSE)
 
 ---
 
