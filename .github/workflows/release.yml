@@ -76,38 +76,64 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
 
-      # macOS: build with retries for notarization network issues
-      - name: Build Tauri app (macOS)
+      # macOS: build + sign WITHOUT notarization (always succeeds)
+      - name: Build and sign macOS app
         if: matrix.platform == 'macos-latest'
-        timeout-minutes: 40
+        timeout-minutes: 20
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+        run: pnpm tauri build ${{ matrix.args }}
+
+      # macOS: notarize separately with retries and timeout control
+      - name: Notarize macOS app
+        if: matrix.platform == 'macos-latest'
+        timeout-minutes: 30
+        env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
+          TARGET="${{ matrix.target }}"
+          APP_PATH="src-tauri/target/${TARGET}/release/bundle/macos/GitFerrum.app"
+
           for attempt in 1 2 3; do
-            echo "=== Build attempt $attempt of 3 ==="
-            if pnpm tauri build ${{ matrix.args }}; then
-              echo "Build succeeded on attempt $attempt"
+            echo "=== Notarization attempt $attempt of 3 ==="
+
+            # Create zip for notarization submission
+            ZIP_PATH="$RUNNER_TEMP/GitFerrum-notarize.zip"
+            ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
+
+            if xcrun notarytool submit "$ZIP_PATH" \
+              --apple-id "$APPLE_ID" \
+              --password "$APPLE_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" \
+              --wait --timeout 10m; then
+
+              echo "Notarization succeeded on attempt $attempt"
+              xcrun stapler staple "$APP_PATH"
+              echo "Staple complete"
               exit 0
             fi
+
             if [ $attempt -lt 3 ]; then
               echo "Attempt $attempt failed. Retrying in 60s..."
               sleep 60
             fi
           done
-          echo "All 3 build attempts failed"
+          echo "All 3 notarization attempts failed"
           exit 1
 
-      - name: Upload macOS artifacts
+      # macOS: re-package notarized app and upload
+      - name: Re-package and upload macOS artifacts
         if: matrix.platform == 'macos-latest'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: |
           TAG="${{ github.ref_name }}"
           TARGET="${{ matrix.target }}"
@@ -126,7 +152,7 @@ jobs:
             [ -f "$f" ] && gh release upload "$TAG" "$f" --clobber
           done
 
-          # Upload updater artifacts with arch suffix to avoid name conflicts
+          # Upload updater artifacts with arch suffix
           if [ -f "${BUNDLE_DIR}/macos/GitFerrum.app.tar.gz" ]; then
             cp "${BUNDLE_DIR}/macos/GitFerrum.app.tar.gz" "${BUNDLE_DIR}/macos/GitFerrum_${ARCH}.app.tar.gz"
             gh release upload "$TAG" "${BUNDLE_DIR}/macos/GitFerrum_${ARCH}.app.tar.gz" --clobber
@@ -136,7 +162,7 @@ jobs:
             gh release upload "$TAG" "${BUNDLE_DIR}/macos/GitFerrum_${ARCH}.app.tar.gz.sig" --clobber
           fi
 
-      # Linux/Windows: use tauri-action (handles build + release + updater JSON)
+      # Linux/Windows: use tauri-action
       - name: Build Tauri app
         if: matrix.platform != 'macos-latest'
         uses: tauri-apps/tauri-action@v0
@@ -157,7 +183,7 @@ jobs:
         run: |
           security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
 
-  # Generate updater JSON with all platforms (including macOS uploaded manually)
+  # Generate updater JSON with all platforms
   updater-json:
     needs: release
     runs-on: ubuntu-latest
@@ -195,7 +221,7 @@ jobs:
           PLATFORMS="{}"
 
           # macOS aarch64
-          MACOS_ARM_FILE=$(echo "$ASSETS" | grep "aarch64.app.tar.gz$" || true)
+          MACOS_ARM_FILE=$(echo "$ASSETS" | grep "_aarch64.app.tar.gz$" || true)
           if [ -n "$MACOS_ARM_FILE" ]; then
             MACOS_ARM_SIG=$(read_sig "${MACOS_ARM_FILE}.sig")
             PLATFORMS=$(echo "$PLATFORMS" | jq \
@@ -205,7 +231,7 @@ jobs:
           fi
 
           # macOS x86_64
-          MACOS_X64_FILE=$(echo "$ASSETS" | grep "x64.app.tar.gz$" || true)
+          MACOS_X64_FILE=$(echo "$ASSETS" | grep "_x64.app.tar.gz$" || true)
           if [ -n "$MACOS_X64_FILE" ]; then
             MACOS_X64_SIG=$(read_sig "${MACOS_X64_FILE}.sig")
             PLATFORMS=$(echo "$PLATFORMS" | jq \
@@ -246,5 +272,5 @@ jobs:
           echo "Generated latest.json:"
           cat /tmp/latest.json
 
-          # Upload to release (overwrite if exists)
+          # Upload to release
           gh release upload "$TAG" /tmp/latest.json --clobber --repo "$REPO"
