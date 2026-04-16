@@ -2,32 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <!-- App Sandbox (required for macOS distribution) -->
-    <key>com.apple.security.app-sandbox</key>
-    <true/>
-
     <!-- Network: outbound connections for updater (GitHub releases endpoint) -->
     <key>com.apple.security.network.client</key>
-    <true/>
-
-    <!-- File access: user-selected directories via open dialog (tauri-plugin-dialog) -->
-    <key>com.apple.security.files.user-selected.read-write</key>
-    <true/>
-
-    <!-- File access: read-write to user home for ~/.gitconfig global config -->
-    <key>com.apple.security.temporary-exception.files.home-relative-path.read-write</key>
-    <array>
-        <string>/.gitconfig</string>
-    </array>
-
-    <!-- Spawn subprocesses: git CLI for diffs (std::process::Command) -->
-    <key>com.apple.security.temporary-exception.mach-lookup.global-name</key>
-    <array>
-        <string>com.apple.coreservices.launchservicesd</string>
-    </array>
-
-    <!-- Allow spawning child processes (git CLI, shell plugin) -->
-    <key>com.apple.security.inherit</key>
     <true/>
 </dict>
 </plist>

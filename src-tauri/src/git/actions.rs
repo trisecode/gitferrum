@@ -99,6 +99,11 @@ pub async fn clone_repo(url: &str, dest: &Path) -> Result<String, AppError> {
 /// Create a local branch tracking a remote branch and check it out.
 /// e.g. remote_branch = "origin/feature" → creates local "feature" and checks it out.
 pub fn checkout_remote_branch(repo_path: &Path, remote_branch: &str) -> Result<(), AppError> {
+    let lock_file = repo_path.join(".git/index.lock");
+    if lock_file.exists() {
+        let _ = std::fs::remove_file(&lock_file);
+    }
+
     // Extract local name: "origin/feature" → "feature"
     let local_name = remote_branch
         .split('/')
@@ -141,6 +146,11 @@ pub fn checkout_remote_branch(repo_path: &Path, remote_branch: &str) -> Result<(
 
 /// Checkout a remote branch in detached HEAD mode (browse without creating a local branch).
 pub fn checkout_detached(repo_path: &Path, ref_name: &str) -> Result<(), AppError> {
+    let lock_file = repo_path.join(".git/index.lock");
+    if lock_file.exists() {
+        let _ = std::fs::remove_file(&lock_file);
+    }
+
     let output = Command::new("git")
         .current_dir(repo_path)
         .args(["checkout", "--detach", &format!("refs/remotes/{}", ref_name)])
@@ -467,6 +477,11 @@ pub async fn pull(repo_path: &Path) -> Result<crate::types::PullResult, AppError
 
 /// Checkout a branch.
 pub fn checkout(repo_path: &Path, branch: &str) -> Result<(), AppError> {
+    let lock_file = repo_path.join(".git/index.lock");
+    if lock_file.exists() {
+        let _ = std::fs::remove_file(&lock_file);
+    }
+
     let output = Command::new("git")
         .current_dir(repo_path)
         .args(["checkout", branch])
